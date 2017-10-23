@@ -1,0 +1,13 @@
+D:\LIJUNGANG\StudyEveryDay\CSharpDeepLearning\connectPostgreSQL\connectPostgreSQL\bin\Debug\connectPostgreSQL.exe
+D:\LIJUNGANG\StudyEveryDay\CSharpDeepLearning\connectPostgreSQL\connectPostgreSQL\bin\Debug\connectPostgreSQL.pdb
+D:\LIJUNGANG\StudyEveryDay\CSharpDeepLearning\connectPostgreSQL\connectPostgreSQL\bin\Debug\Mono.Security.dll
+D:\LIJUNGANG\StudyEveryDay\CSharpDeepLearning\connectPostgreSQL\connectPostgreSQL\bin\Debug\Npgsql.dll
+D:\LIJUNGANG\StudyEveryDay\CSharpDeepLearning\connectPostgreSQL\connectPostgreSQL\bin\Debug\Npgsql.xml
+D:\LIJUNGANG\StudyEveryDay\CSharpDeepLearning\connectPostgreSQL\connectPostgreSQL\bin\Debug\de\Npgsql.resources.dll
+D:\LIJUNGANG\StudyEveryDay\CSharpDeepLearning\connectPostgreSQL\connectPostgreSQL\bin\Debug\es\Npgsql.resources.dll
+D:\LIJUNGANG\StudyEveryDay\CSharpDeepLearning\connectPostgreSQL\connectPostgreSQL\bin\Debug\fi\Npgsql.resources.dll
+D:\LIJUNGANG\StudyEveryDay\CSharpDeepLearning\connectPostgreSQL\connectPostgreSQL\bin\Debug\fr\Npgsql.resources.dll
+D:\LIJUNGANG\StudyEveryDay\CSharpDeepLearning\connectPostgreSQL\connectPostgreSQL\bin\Debug\ja\Npgsql.resources.dll
+D:\LIJUNGANG\StudyEveryDay\CSharpDeepLearning\connectPostgreSQL\connectPostgreSQL\bin\Debug\zh-CN\Npgsql.resources.dll
+D:\LIJUNGANG\StudyEveryDay\CSharpDeepLearning\connectPostgreSQL\connectPostgreSQL\obj\x86\Debug\connectPostgreSQL.exe
+D:\LIJUNGANG\StudyEveryDay\CSharpDeepLearning\connectPostgreSQL\connectPostgreSQL\obj\x86\Debug\connectPostgreSQL.pdb
