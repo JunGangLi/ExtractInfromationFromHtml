@@ -292,7 +292,6 @@ namespace GetInfo_fromHtml
             StreamReader sr = new StreamReader(currenttimeResponse.GetResponseStream());
             string sb = sr.ReadToEnd();
             sr.Close();
-
             var doc = new HtmlDocument();
             doc.LoadHtml(sb);
             HtmlNode docnode = doc.DocumentNode;
