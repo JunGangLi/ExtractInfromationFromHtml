@@ -373,6 +373,9 @@ namespace GetInfo_fromHtml
         private void getDayDataFromFile(List<string> param,string pathfile)
         {
             //页数；城市；开始时间；结束时间；
+            string filename = Path.GetFileNameWithoutExtension(pathfile);
+            StreamWriter sw1 = new StreamWriter(Path.GetDirectoryName(pathfile) + "\\" + filename + "errHtmlBuchong" + DateTime.Now.Millisecond.ToString() + ".txt", true);
+            StreamWriter sw = new StreamWriter(pathfile, true);
             foreach (var item in param)
             {
                 string[] pCity = item.Split(new string[] { ";" }, StringSplitOptions.None);
@@ -383,35 +386,28 @@ namespace GetInfo_fromHtml
                     int pageno=1;
                     if (start!=null & end!=null & int.TryParse(pCity[0],out pageno))
                     {
-                        using (StreamWriter sw = new StreamWriter(pathfile, true))
+                        List<string[]> dayData = null;
+                        dayData = EnvironmentalData.getDayData(pageno, pCity[1], start, end);
+                        if (dayData == null)
                         {
-                            string filename = Path.GetFileNameWithoutExtension(pathfile);
-                            StreamWriter sw1 = new StreamWriter(Path.GetDirectoryName(pathfile) + "\\"+filename+"errHtmlBuchong"+DateTime.Now.Millisecond.ToString()+".txt", true);
-                            List<string[]> dayData = null;
-                           
-                            dayData = null;
-                            dayData = EnvironmentalData.getDayData(pageno, pCity[1], start, end);
-                            if (dayData == null)
-                            {
-                                //页数；城市；开始时间；结束时间；
-                                sw1.WriteLine(pageno + ";" + pCity[1] + ";" + start.ToString() + ";" + end.ToString());
-                            }
-                           
-                            for (int i = 0; i < dayData.Count; i++)
-                            {
-                                for (int j = 0; j < dayData[i].Length; j++)
-                                {
-                                    sw.Write(dayData[i][j] + ";");
-                                }
-                                sw.WriteLine();
-                            }
-                           
-                            sw1.Close();
-                            sw.Close();
+                            //页数；城市；开始时间；结束时间；
+                            sw1.WriteLine(pageno + ";" + pCity[1] + ";" + start.ToString() + ";" + end.ToString());
+                            continue;
                         }
+                           
+                        for (int i = 0; i < dayData.Count; i++)
+                        {
+                            for (int j = 0; j < dayData[i].Length; j++)
+                            {
+                                sw.Write(dayData[i][j] + ";");
+                            }
+                            sw.WriteLine();
+                        }                       
                     }                    
                 }              
             }
+            sw1.Close();
+            sw.Close();
         }
 
     }
