@@ -211,7 +211,7 @@ namespace GetInfo_fromHtml
         /// <returns>返回的列表中字符串数字共有8个元素，依次为：ID:{0}城市：{1}AQI指数为：{2}首要污染物:
         /// {3}等级：{4}日期：{5}CityCode:{6}空气质量级别{7}</returns>
         public static List<string[]> getDayData(int PageNo, string city, DateTime fromDate, DateTime endDate)
-        {           
+        {
             List<string[]> dayDataList = new List<string[]>();
             byte[] citybyte = System.Text.Encoding.UTF8.GetBytes(city);
             city = System.Web.HttpUtility.UrlEncode(citybyte);
@@ -223,61 +223,62 @@ namespace GetInfo_fromHtml
             string webform = string.Format("page.pageNo={0}&page.orderBy=&page.order=&orderby=&ordertype=&xmlname=1462259560614&queryflag=open&gisDataJson=&isdesignpatterns=false&CITY={1}&V_DATE={2}&E_DATE={3}", PageNo, city, vtime, etime);
             byte[] webformByte = System.Text.Encoding.UTF8.GetBytes(webform);
             HttpWebRequest httprequest = (HttpWebRequest)WebRequest.Create("http://datacenter.mep.gov.cn:8099/ths-report/report!list.action");
-            httprequest.KeepAlive = true;
-            httprequest.UserAgent = " Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36";
-            httprequest.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
-            httprequest.ContentType = " application/x-www-form-urlencoded";
-            httprequest.Method = "POST";
-            StreamWriter sw = new StreamWriter(httprequest.GetRequestStream());
-            sw.Write(webform);
-            sw.Close();
-
-
-            HttpWebResponse response = (HttpWebResponse)httprequest.GetResponse();
-            StreamReader sr = new StreamReader(response.GetResponseStream());
-            string sb = sr.ReadToEnd();
-            sr.Close();
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(sb.ToString());
-            HtmlNode docNode = doc.DocumentNode;
-            if (docNode != null )
-            {
+            
+                httprequest.KeepAlive = false;
+                httprequest.UserAgent = " Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36";
+                httprequest.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
+                httprequest.ContentType = " application/x-www-form-urlencoded";
+                httprequest.Method = "POST";
+                StreamWriter sw = new StreamWriter(httprequest.GetRequestStream());
+                sw.Write(webform);
+                sw.Close();
                 try
                 {
-                    for (int i = 3; i < 63; i++)
+                    HttpWebResponse response = (HttpWebResponse)httprequest.GetResponse();
+                    if (response.StatusCode == HttpStatusCode.OK)
                     {
-                        string[] cityDayData = new string[8];
-                        cityDayData[0] = docNode.ChildNodes[3].ChildNodes[3].ChildNodes[25].ChildNodes[25].ChildNodes[1].ChildNodes[1].ChildNodes[i].ChildNodes[2].InnerText;
-                        cityDayData[1] = docNode.ChildNodes[3].ChildNodes[3].ChildNodes[25].ChildNodes[25].ChildNodes[1].ChildNodes[1].ChildNodes[i].ChildNodes[4].InnerText;
-                        cityDayData[2] = docNode.ChildNodes[3].ChildNodes[3].ChildNodes[25].ChildNodes[25].ChildNodes[1].ChildNodes[1].ChildNodes[i].ChildNodes[6].InnerText;
-                        cityDayData[3] = docNode.ChildNodes[3].ChildNodes[3].ChildNodes[25].ChildNodes[25].ChildNodes[1].ChildNodes[1].ChildNodes[i].ChildNodes[8].InnerText;
-                        cityDayData[4] = docNode.ChildNodes[3].ChildNodes[3].ChildNodes[25].ChildNodes[25].ChildNodes[1].ChildNodes[1].ChildNodes[i].ChildNodes[10].InnerText;
-                        cityDayData[5] = docNode.ChildNodes[3].ChildNodes[3].ChildNodes[25].ChildNodes[25].ChildNodes[1].ChildNodes[1].ChildNodes[i].ChildNodes[12].InnerText;
-                        cityDayData[6] = docNode.ChildNodes[3].ChildNodes[3].ChildNodes[25].ChildNodes[25].ChildNodes[1].ChildNodes[1].ChildNodes[i].ChildNodes[14].InnerText;
-                        cityDayData[7] = docNode.ChildNodes[3].ChildNodes[3].ChildNodes[25].ChildNodes[25].ChildNodes[1].ChildNodes[1].ChildNodes[i].ChildNodes[16].InnerText;
+                        StreamReader sr = new StreamReader(response.GetResponseStream());
+                        string sb = sr.ReadToEnd();
+                        sr.Close();
+                        response.Close();
+                        response = null;
+                        var doc = new HtmlDocument();
+                        doc.LoadHtml(sb.ToString());
+                        HtmlNode docNode = doc.DocumentNode;
+                        if (docNode != null)
+                        {
+                            try
+                            {
+                                for (int i = 3; i < 63; i++)
+                                {
+                                    string[] cityDayData = new string[8];
+                                    cityDayData[0] = docNode.ChildNodes[3].ChildNodes[3].ChildNodes[25].ChildNodes[25].ChildNodes[1].ChildNodes[1].ChildNodes[i].ChildNodes[2].InnerText;
+                                    cityDayData[1] = docNode.ChildNodes[3].ChildNodes[3].ChildNodes[25].ChildNodes[25].ChildNodes[1].ChildNodes[1].ChildNodes[i].ChildNodes[4].InnerText;
+                                    cityDayData[2] = docNode.ChildNodes[3].ChildNodes[3].ChildNodes[25].ChildNodes[25].ChildNodes[1].ChildNodes[1].ChildNodes[i].ChildNodes[6].InnerText;
+                                    cityDayData[3] = docNode.ChildNodes[3].ChildNodes[3].ChildNodes[25].ChildNodes[25].ChildNodes[1].ChildNodes[1].ChildNodes[i].ChildNodes[8].InnerText;
+                                    cityDayData[4] = docNode.ChildNodes[3].ChildNodes[3].ChildNodes[25].ChildNodes[25].ChildNodes[1].ChildNodes[1].ChildNodes[i].ChildNodes[10].InnerText;
+                                    cityDayData[5] = docNode.ChildNodes[3].ChildNodes[3].ChildNodes[25].ChildNodes[25].ChildNodes[1].ChildNodes[1].ChildNodes[i].ChildNodes[12].InnerText;
+                                    cityDayData[6] = docNode.ChildNodes[3].ChildNodes[3].ChildNodes[25].ChildNodes[25].ChildNodes[1].ChildNodes[1].ChildNodes[i].ChildNodes[14].InnerText;
+                                    cityDayData[7] = docNode.ChildNodes[3].ChildNodes[3].ChildNodes[25].ChildNodes[25].ChildNodes[1].ChildNodes[1].ChildNodes[i].ChildNodes[16].InnerText;
 
-                        //cityDayData[0] = docNode.SelectSingleNode("/html[1]/body[1]/div[1]/div[2]/div[1]/table[1]/tr[2]/td[2]") == null ? null : docNode.SelectSingleNode("/html[1]/body[1]/div[1]/div[2]/div[1]/table[1]/tr[2]/td[2]").InnerText;
-                        //cityDayData[1] = docNode.SelectSingleNode("/html[1]/body[1]/div[1]/div[2]/div[1]/table[1]/tr[2]/td[3]") == null ? null : docNode.SelectSingleNode("/html[1]/body[1]/div[1]/div[2]/div[1]/table[1]/tr[2]/td[3]").InnerText;
-                        //cityDayData[2] = docNode.SelectSingleNode("/html[1]/body[1]/div[1]/div[2]/div[1]/table[1]/tr[2]/td[4]") == null ? null : docNode.SelectSingleNode("/html[1]/body[1]/div[1]/div[2]/div[1]/table[1]/tr[2]/td[4]").InnerText;
-                        //cityDayData[3] = docNode.SelectSingleNode("/html[1]/body[1]/div[1]/div[2]/div[1]/table[1]/tr[2]/td[5]") == null ? null : docNode.SelectSingleNode("/html[1]/body[1]/div[1]/div[2]/div[1]/table[1]/tr[2]/td[5]").InnerText;
-                        //cityDayData[4] = docNode.SelectSingleNode("/html[1]/body[1]/div[1]/div[2]/div[1]/table[1]/tr[2]/td[6]") == null ? null : docNode.SelectSingleNode("/html[1]/body[1]/div[1]/div[2]/div[1]/table[1]/tr[2]/td[6]").InnerText;
-                        //cityDayData[5] = docNode.SelectSingleNode("/html[1]/body[1]/div[1]/div[2]/div[1]/table[1]/tr[2]/td[7]") == null ? null : docNode.SelectSingleNode("/html[1]/body[1]/div[1]/div[2]/div[1]/table[1]/tr[2]/td[7]").InnerText;
-                        //cityDayData[6] = docNode.SelectSingleNode("/html[1]/body[1]/div[1]/div[2]/div[1]/table[1]/tr[2]/td[8]") == null ? null : docNode.SelectSingleNode("/html[1]/body[1]/div[1]/div[2]/div[1]/table[1]/tr[2]/td[8]").InnerText;
-                        //cityDayData[7] = docNode.SelectSingleNode("/html[1]/body[1]/div[1]/div[2]/div[1]/table[1]/tr[2]/td[9]") == null ? null : docNode.SelectSingleNode("/html[1]/body[1]/div[1]/div[2]/div[1]/table[1]/tr[2]/td[9]").InnerText;
-
-                        dayDataList.Add(cityDayData);
-                        i++;
-
+                                    dayDataList.Add(cityDayData);
+                                    i++;
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                return dayDataList;
+                            }
+                        }
                     }
+                    else
+                        return null;  
                 }
                 catch (Exception)
                 {
-                    return dayDataList;
-                }
-               
-            }
 
+                    return null;
+                }
             return dayDataList;
         }
 

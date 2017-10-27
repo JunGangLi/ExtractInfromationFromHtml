@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Threading;
+using System.Globalization;
 
 namespace GetInfo_fromHtml
 {
@@ -294,25 +295,34 @@ namespace GetInfo_fromHtml
                     {
                         dateTimeStart.Value = dateTimeEnd.Value;
                     }
-                    Action<DateTime, DateTime, string> getdata02 = new Action<DateTime, DateTime, string>(getDay);
-                    getdata02.BeginInvoke(dateTimeStart.Value, dateTimeEnd.Value, ofd.FileName, recall, null);                  
+                    Action<DateTime, DateTime, string, string> getdata02 = new Action<DateTime, DateTime, string, string>(getDay);
+                    getdata02.BeginInvoke(dateTimeStart.Value, dateTimeEnd.Value, ofd.FileName, "", recall, null); 
+                    //getDay(dateTimeStart.Value, dateTimeEnd.Value, ofd.FileName, "");
                 }
             }
         }
 
-        private void getDay(DateTime start, DateTime end,string pathfile)
+        private void getDay(DateTime start, DateTime end, string pathfile, string city = "")
         {
             int pageNo = 1;
             using (StreamWriter sw = new StreamWriter(pathfile, true))
             {
-                
+                string filename = Path.GetFileNameWithoutExtension(pathfile);
+                StreamWriter sw1 = new StreamWriter(Path.GetDirectoryName(pathfile) + "\\"+filename+"errHtml" + DateTime.Now.Millisecond.ToString() + ".txt", true);
                 List<string[]> dayData = null;
                 int uablecount = 0;
                 do
                 {                    
                     dayData = null;
-                    dayData = EnvironmentalData.getDayData(pageNo, "", start, end);
-                    if (dayData.Count==0)
+                    dayData = EnvironmentalData.getDayData(pageNo, city, start, end);
+                    if (dayData==null)
+                    {
+                        //页数；城市；开始时间；结束时间；
+                        sw1.WriteLine(pageNo + ";" + city + ";" + start.ToString() + ";" + end.ToString());
+                        uablecount++;
+                        continue;
+                    }                    
+                    else if (dayData.Count==0)
                     {
                         uablecount++;
                         break;
@@ -327,9 +337,82 @@ namespace GetInfo_fromHtml
                     }                            
                     pageNo++;
                     GC.Collect();
-                } while (uablecount <= 5);                                
+                } while (uablecount <= 5);
+                sw1.Close();          
                 sw.Close();
             }
         }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            if (ofd.ShowDialog()==DialogResult.OK)
+            {
+                StreamReader sr = new StreamReader(ofd.FileName);
+                string str = null;
+                List<string> param = new List<string>();
+                while (!sr.EndOfStream)
+                {
+                    str = sr.ReadLine();
+                    param.Add(str);
+                }
+                sr.Close();
+                if (param.Count > 0)
+                {
+                    SaveFileDialog sfd = new SaveFileDialog();
+                    sfd.Filter = "*.txt|*.txt";
+                    if (sfd.ShowDialog() == DialogResult.OK)
+                    {
+                        Action<List<string>, string> getdata = new Action<List<string>, string>(getDayDataFromFile);
+                        getdata.BeginInvoke(param, sfd.FileName,null,null);
+                    }
+                }              
+            }
+        }
+
+        private void getDayDataFromFile(List<string> param,string pathfile)
+        {
+            //页数；城市；开始时间；结束时间；
+            foreach (var item in param)
+            {
+                string[] pCity = item.Split(new string[] { ";" }, StringSplitOptions.None);
+                if (pCity.Length==4)
+                {
+                    DateTime start = Convert.ToDateTime(pCity[2]);
+                    DateTime end = Convert.ToDateTime(pCity[3]);
+                    int pageno=1;
+                    if (start!=null & end!=null & int.TryParse(pCity[0],out pageno))
+                    {
+                        using (StreamWriter sw = new StreamWriter(pathfile, true))
+                        {
+                            string filename = Path.GetFileNameWithoutExtension(pathfile);
+                            StreamWriter sw1 = new StreamWriter(Path.GetDirectoryName(pathfile) + "\\"+filename+"errHtmlBuchong"+DateTime.Now.Millisecond.ToString()+".txt", true);
+                            List<string[]> dayData = null;
+                           
+                            dayData = null;
+                            dayData = EnvironmentalData.getDayData(pageno, pCity[1], start, end);
+                            if (dayData == null)
+                            {
+                                //页数；城市；开始时间；结束时间；
+                                sw1.WriteLine(pageno + ";" + pCity[1] + ";" + start.ToString() + ";" + end.ToString());
+                            }
+                           
+                            for (int i = 0; i < dayData.Count; i++)
+                            {
+                                for (int j = 0; j < dayData[i].Length; j++)
+                                {
+                                    sw.Write(dayData[i][j] + ";");
+                                }
+                                sw.WriteLine();
+                            }
+                           
+                            sw1.Close();
+                            sw.Close();
+                        }
+                    }                    
+                }              
+            }
+        }
+
     }
 }
