@@ -28,25 +28,38 @@ namespace GetInfo_fromHtml
 
         private void button1_Click(object sender, EventArgs e)
         {
+            int afterMinutes=0;
             if (!checkBox1.Checked)
             {
                 if (!string.IsNullOrEmpty(dataPath.Text))
                 {
                     if (!timer.Enabled)
                     {
-                        Action<string, string> getRealtime = autoGet;
-                        string path = Path.GetDirectoryName(dataPath.Text);
-                        this.BeginInvoke(getRealtime, path+"\\cityList.txt", dataPath.Text);
-                        timer.Enabled = true;
-                        timer.Interval = 3600000;
-                        timer.AutoReset = true;
-                        timer.Elapsed += new System.Timers.ElapsedEventHandler(getEveryHours);
+                       // Action<DateTime, DateTime, string, string> getdata02 = new Action<DateTime, DateTime, string, string>(getDay);
+                        string filePath = Path.GetDirectoryName(dataPath.Text.Trim());
+                        if (!File.Exists(filePath + "\\cityList.txt"))
+                        {
+                            File.Delete(filePath + "\\cityList.txt");
+                        }
+                        //DateTime tempTime = DateTime.Now.AddDays(-7);
+                        getCityList(DateTime.Now.AddDays(-3));
+                       // getDay(tempTime, tempTime, filePath + "\\cityList.txt", "");
+                       // getdata02.BeginInvoke(tempTime, tempTime, filePath + "\\cityList.txt", "", null, null); 
+
+                        //Action<string, string> getRealtime = new Action<string, string>(autoGet);                           
+                        //string path = Path.GetDirectoryName(dataPath.Text);
+                        //getRealtime.BeginInvoke(path + "\\cityList.txt", dataPath.Text.Trim(), null, null);
+                        ////this.BeginInvoke(getRealtime, path+"\\cityList.txt", dataPath.Text);
+                        //timer.Enabled = true;
+                        //timer.Interval = 3600000 ;
+                        //timer.AutoReset = true;
+                        //timer.Elapsed += new System.Timers.ElapsedEventHandler(getEveryHours);
                     }
                 }
             }
             else
             {
-                if (afterTime.Text!=null)
+                if (afterTime.Text != null & int.TryParse(afterTime.Text.Trim(), out afterMinutes))
                 {
                     try
                     {
@@ -59,7 +72,7 @@ namespace GetInfo_fromHtml
                     }
                     timer.Enabled = true;                   
                     timer.AutoReset = true;
-                    timer.Elapsed += new System.Timers.ElapsedEventHandler(getEveryHours);
+                   // timer.Elapsed += new System.Timers.ElapsedEventHandler(getEveryHours);
 
                 }
             }
@@ -67,15 +80,17 @@ namespace GetInfo_fromHtml
          
         }
 
-        private void getEveryHours(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            if (!string.IsNullOrEmpty(citylist.Text) & !string.IsNullOrEmpty(dataPath.Text))
-            {
-                Action<string, string> getRealtime = autoGet;
+       
 
-                this.BeginInvoke(getRealtime, citylist.Text, dataPath.Text);
-            }
-        }
+        //private void getEveryHours(object sender, System.Timers.ElapsedEventArgs e)
+        //{
+        //    if (!string.IsNullOrEmpty(citylist.Text) & !string.IsNullOrEmpty(dataPath.Text))
+        //    {
+        //        Action<string, string> getRealtime = autoGet;
+
+        //        this.BeginInvoke(getRealtime, citylist.Text, dataPath.Text);
+        //    }
+        //}
 
         private void autoGet(string cityList, string dataPath)
         {
@@ -150,7 +165,7 @@ namespace GetInfo_fromHtml
             if (timer.Enabled)
             {
                 timer.Enabled = false;
-                timer.Elapsed -= getEveryHours;
+               // timer.Elapsed -= getEveryHours;
             }
             
         }
@@ -179,21 +194,21 @@ namespace GetInfo_fromHtml
 
         private void recall(IAsyncResult result)
         {
-            if (dateTimeEnd.InvokeRequired == true)
-            {
-                Action set = new Action(() => { dateTimeEnd.Enabled = true; });
-                this.BeginInvoke(set);
-            }
-            else
-                dateTimeEnd.Enabled = true;
+            //if (dateTimeEnd.InvokeRequired == true)
+            //{
+            //    Action set = new Action(() => { dateTimeEnd.Enabled = true; });
+            //    this.BeginInvoke(set);
+            //}
+            //else
+            //    dateTimeEnd.Enabled = true;
 
-            if (dateTimeStart.InvokeRequired == true)
-            {
-                Action set = new Action(() => { dateTimeStart.Enabled = true; });
-                this.BeginInvoke(set);
-            }
-            else
-                dateTimeStart.Enabled = true;
+            //if (dateTimeStart.InvokeRequired == true)
+            //{
+            //    Action set = new Action(() => { dateTimeStart.Enabled = true; });
+            //    this.BeginInvoke(set);
+            //}
+            //else
+            //    dateTimeStart.Enabled = true;
             
         }
 
@@ -284,8 +299,6 @@ namespace GetInfo_fromHtml
             {
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
-                    dateTimeStart.Enabled = false;
-                    dateTimeEnd.Enabled = false;
                     if (dateTimeEnd.Value.CompareTo(DateTime.Now) > 0)
                     {
                         dateTimeEnd.Value = DateTime.Now;
@@ -296,10 +309,50 @@ namespace GetInfo_fromHtml
                         dateTimeStart.Value = dateTimeEnd.Value;
                     }
                     Action<DateTime, DateTime, string, string> getdata02 = new Action<DateTime, DateTime, string, string>(getDay);
-                    getdata02.BeginInvoke(dateTimeStart.Value, dateTimeEnd.Value, ofd.FileName, "", recall, null); 
-                    //getDay(dateTimeStart.Value, dateTimeEnd.Value, ofd.FileName, "");
+                    getdata02.BeginInvoke(dateTimeStart.Value, dateTimeEnd.Value, ofd.FileName, "", recall, null);                     
                 }
             }
+        }
+
+        private List<string> getCityList(DateTime start)
+        {
+            List<string> cityList=new List<string>();
+            List<string> tempcityList = new List<string>();            
+            for (int j = 0; j < 3; j++)
+			{
+                int pageNo = 1;
+                tempcityList=new List<string>();                
+                start=start.AddDays(-7*j);
+                List<string[]> dayData = null;
+                int uablecount = 0;
+                do
+                {
+                    dayData = null;
+                    dayData = EnvironmentalData.getDayData(pageNo, "", start, start);
+                    if (dayData == null)
+                    {
+                        //页数；城市；开始时间；结束时间；                        
+                        uablecount++;
+                        continue;
+                    }
+                    else if (dayData.Count == 0)
+                    {
+                        uablecount++;
+                        continue;
+                    }
+                    for (int i = 0; i < dayData.Count; i++)
+                    {
+                        tempcityList.Add(string.Format("{0};{1}", dayData[i][1], dayData[i][6]));                        
+                    }
+                    pageNo++;
+                    GC.Collect();
+                } while (uablecount <= 2);
+                if (cityList.Count < 1)
+                    cityList = tempcityList;
+                else
+                    cityList = (tempcityList.Count > cityList.Count ? tempcityList : cityList);
+            }
+            return cityList;
         }
 
         private void getDay(DateTime start, DateTime end, string pathfile, string city = "")
@@ -325,7 +378,7 @@ namespace GetInfo_fromHtml
                     else if (dayData.Count==0)
                     {
                         uablecount++;
-                        break;
+                        continue;
                     }
                     for (int i = 0; i < dayData.Count; i++)
                     {
