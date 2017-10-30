@@ -99,16 +99,7 @@ namespace GetInfo_fromHtml
             try
             {
                 string[] airDataHours = new string[8];   //AQI 等级 PM2.5 PM10 SO2 NO2 CO O3
-                StringBuilder sb = new StringBuilder();
-                ////hexEncode
-                //byte[] namebytes = System.Text.Encoding.UTF8.GetBytes(name);
-                //string webName = string.Empty;
-                //for (int i = 0; i < namebytes.Length; i++)
-                //{
-                //    webName = string.Format("{0:x}", namebytes[i]).ToUpper() + "%";
-                //}
-
-                //urlEncode
+                StringBuilder sb = new StringBuilder();               
                 byte[] time = System.Text.Encoding.UTF8.GetBytes(string.Format("{0:g}", date));
                 string formWeb = "cityName=" + System.Web.HttpUtility.UrlEncode(name) + "&searchTime=" + System.Web.HttpUtility.UrlEncode(time);
                 string url = string.Format("http://datacenter.mep.gov.cn/index!environmentAirHourDetail.action?{0}", formWeb);
@@ -116,20 +107,26 @@ namespace GetInfo_fromHtml
                 httprequest.KeepAlive = true;
                 httprequest.Accept = " gzip, deflate";
                 httprequest.Method = "POST";
-                HttpWebResponse httpresponse = (HttpWebResponse)httprequest.GetResponse();
-
-                Stream s = httpresponse.GetResponseStream();
-                StreamReader sr = new StreamReader(s);
-
-                while (!sr.EndOfStream)
+                try
                 {
-                    string tempstr = sr.ReadLine();
-                    if (tempstr != " " & tempstr != "\r\n" & tempstr != "\r\n\r\n" & tempstr != "\r\n\r\n")
+                    HttpWebResponse httpresponse = (HttpWebResponse)httprequest.GetResponse();
+                    Stream s = httpresponse.GetResponseStream();
+                    StreamReader sr = new StreamReader(s);
+                    while (!sr.EndOfStream)
                     {
-                        sb.AppendLine(tempstr);
+                        string tempstr = sr.ReadLine();
+                        if (tempstr != " " & tempstr != "\r\n" & tempstr != "\r\n\r\n" & tempstr != "\r\n\r\n")
+                        {
+                            sb.AppendLine(tempstr);
+                        }
                     }
+                    sr.Close();
                 }
-                sr.Close();
+                catch (Exception)
+                {
+                    return null;
+                }
+               
                 var doc = new HtmlDocument();
                 doc.LoadHtml(sb.ToString());
                 HtmlNode docNode = doc.DocumentNode;
@@ -140,55 +137,46 @@ namespace GetInfo_fromHtml
                     foreach (var item in qai.ChildNodes)
                     {
                         airDataHours[0] = (item.OuterHtml.Trim());
-                        //Console.WriteLine("AQI: " + item.OuterHtml);
                     }
 
-                    //"/html[1]/body[1]/div[2]/div[3]/table[1]/tr[1]/td[1]/table[1]/tr[2]/td[1]/div[1]/div[1]/div[1]/p[3]/#text[1]"
                     var level = doc.DocumentNode.SelectSingleNode(@"/html[1]/body[1]/div[2]/div[3]/table[1]/tr[1]/td[1]/table[1]/tr[2]/td[1]/div[1]/div[1]/div[1]/p[3]");
                     airDataHours[1] = level.InnerHtml.Trim();
                     var pm2d5 = doc.DocumentNode.SelectSingleNode(@"/html[1]/body[1]/div[2]/div[3]/table[1]/tr[1]/td[1]/table[1]/tr[2]/td[1]/div[1]/div[4]/p[2]");
                     foreach (var item in pm2d5.ChildNodes)
                     {
                         airDataHours[2] = (item.OuterHtml.Trim());
-                        //Console.WriteLine("PM2.5: " + item.OuterHtml);
                     }
 
                     var pm10 = doc.DocumentNode.SelectSingleNode(@"/html[1]/body[1]/div[2]/div[3]/table[1]/tr[1]/td[1]/table[1]/tr[2]/td[1]/div[1]/div[5]/p[2]");
                     foreach (var item in pm10.ChildNodes)
                     {
                         airDataHours[3] = (item.OuterHtml.Trim());
-                        //Console.WriteLine("PM10: " + item.OuterHtml);
                     }
 
                     var SO2 = doc.DocumentNode.SelectSingleNode(@"/html[1]/body[1]/div[2]/div[3]/table[1]/tr[1]/td[1]/table[1]/tr[2]/td[1]/div[1]/div[6]/p[2]");
                     foreach (var item in SO2.ChildNodes)
                     {
                         airDataHours[4] = (item.OuterHtml.Trim());
-                        //Console.WriteLine("SO2: " + item.OuterHtml);
                     }
 
                     var NO2 = doc.DocumentNode.SelectSingleNode(@"/html[1]/body[1]/div[2]/div[3]/table[1]/tr[1]/td[1]/table[1]/tr[2]/td[1]/div[1]/div[7]/p[2]");
                     foreach (var item in NO2.ChildNodes)
                     {
                         airDataHours[5] = (item.OuterHtml.Trim());
-                        // Console.WriteLine("NO2: " + item.OuterHtml);
                     }
 
                     var CO = doc.DocumentNode.SelectSingleNode(@"/html[1]/body[1]/div[2]/div[3]/table[1]/tr[1]/td[1]/table[1]/tr[2]/td[1]/div[1]/div[8]/p[2]");
                     foreach (var item in CO.ChildNodes)
                     {
                         airDataHours[6] = (item.OuterHtml.Trim());
-                        //Console.WriteLine("CO: " + item.OuterHtml);
                     }
 
                     var O3 = doc.DocumentNode.SelectSingleNode(@"/html[1]/body[1]/div[2]/div[3]/table[1]/tr[1]/td[1]/table[1]/tr[2]/td[1]/div[1]/div[9]/p[2]");
                     foreach (var item in O3.ChildNodes)
                     {
                         airDataHours[7] = (item.OuterHtml.Trim());
-                        // Console.WriteLine("O3: " + item.OuterHtml);
                     }
                 }
-
                 return airDataHours;
             }
             catch (Exception err)

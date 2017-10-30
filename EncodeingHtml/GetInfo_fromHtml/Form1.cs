@@ -17,7 +17,7 @@ namespace GetInfo_fromHtml
     {
         public Form1()
         {
-            InitializeComponent();
+            InitializeComponent();            
         }
 
         private System.Timers.Timer timer = new System.Timers.Timer();
@@ -36,13 +36,7 @@ namespace GetInfo_fromHtml
                     if (!timer.Enabled)
                     {
                        // Action<DateTime, DateTime, string, string> getdata02 = new Action<DateTime, DateTime, string, string>(getDay);
-                        string filePath = Path.GetDirectoryName(dataPath.Text.Trim());
-                        if (!File.Exists(filePath + "\\cityList.txt"))
-                        {
-                            File.Delete(filePath + "\\cityList.txt");
-                        }
-                        //DateTime tempTime = DateTime.Now.AddDays(-7);
-                        getCityList(DateTime.Now.AddDays(-3));
+                        
                        // getDay(tempTime, tempTime, filePath + "\\cityList.txt", "");
                        // getdata02.BeginInvoke(tempTime, tempTime, filePath + "\\cityList.txt", "", null, null); 
 
@@ -130,22 +124,14 @@ namespace GetInfo_fromHtml
       
         private void button3_Click(object sender, EventArgs e)
         {
-            //DateTime currenttime = DateTime.Now;
-            //DateTime time = new DateTime(currenttime.Year, currenttime.Month, currenttime.Day, 23, 0, 0);
-            //citylist.Text = string.Format("{0:g}", time);
-            //time= time.AddHours(1);
-            //citylist.Text += string.Format("{0:g}", time);
-
-            List<string> cities = EnvironmentalData.getCity();
-
-            //SaveFileDialog ofd = new SaveFileDialog();
-            //if (ofd.ShowDialog() == DialogResult.OK)
-            //{
-
-            //    pretime = DateTime.Now;
-            //    citylist.Text = ofd.FileName;
-
-            //}
+            Action CitiesDisply = new Action(() =>
+            {
+                List<string> cities = getCityList(DateTime.Now.AddDays(-3));
+                if (cities.Count < 1)
+                    MessageBox.Show("获取列表失败！");
+                updateCombox(cities, comboBox1);                          
+            });
+            CitiesDisply.BeginInvoke(null,null);
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -173,66 +159,73 @@ namespace GetInfo_fromHtml
         private void btHistoryAirQ_Click(object sender, EventArgs e)
         {
             SaveFileDialog ofd = new SaveFileDialog();
+            ofd.Filter = "文本文件|*.txt";
             if (dateTimeStart.Enabled & dateTimeEnd.Enabled)
             {
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
-                    //ThreadStart  ts =new ThreadStart(
-                    //Thread getdata1 = new System.Threading.Thread(new ParameterizedThreadStart(getHistoryAirData));
-                    //getdata1.IsBackground = true;
-                    dateTimeStart.Enabled = false;
-                    dateTimeEnd.Enabled = false;
-                    //var fromtime = dateTimeStart.Value;
-                    //var endtime = dateTimeEnd.Value;
-                    //getdata1.Start(ofd.FileName);
-                    Action<string> getdata02 = new Action<string>(getHistoryAirData);
-                    getdata02.BeginInvoke(ofd.FileName, recall, null);
-                    //this.BeginInvoke(getdata, ofd.FileName);
+                    if (dateTimeEnd.Value.CompareTo(DateTime.Now) > 0)
+                    {
+                        dateTimeEnd.Value = DateTime.Now;
+                    }
+
+                    if (dateTimeStart.Value.CompareTo(dateTimeEnd.Value) > 0)
+                    {
+                        dateTimeStart.Value = dateTimeEnd.Value;
+                    }                    
+                    List<string> cities = new List<string>();
+                    if (comboBox1.Items.Count<1)
+                    {
+                        MessageBox.Show("请先获取城市列表！");
+                    }
+
+                    if (comboBox1.SelectedIndex == -1)
+                    {
+                        if (MessageBox.Show("是否要获取所有城市的空气质量数据？", "注意选择城市列表", MessageBoxButtons.OKCancel) == DialogResult.OK)
+                        {
+                            foreach (var item in comboBox1.Items)
+                            {
+                                cities.Add(item.ToString().Split(new string[]{";","；"},StringSplitOptions.RemoveEmptyEntries)[0]);
+                            }
+                        }
+                        else
+                            return;
+                    }
+                    else
+                        cities.Add(comboBox1.SelectedItem.ToString().Split(new string[] { ";", "；" }, StringSplitOptions.RemoveEmptyEntries)[0]);
+
+                    Action<string, DateTime, DateTime, List<string>> getdata02 = new Action<string, DateTime, DateTime, List<string>>(getHourData);
+                    getdata02.BeginInvoke(ofd.FileName,dateTimeStart.Value,dateTimeEnd.Value,cities, null, null);                   
                 }      
             }
         }
 
-        private void recall(IAsyncResult result)
-        {
-            //if (dateTimeEnd.InvokeRequired == true)
-            //{
-            //    Action set = new Action(() => { dateTimeEnd.Enabled = true; });
-            //    this.BeginInvoke(set);
-            //}
-            //else
-            //    dateTimeEnd.Enabled = true;
+       
 
-            //if (dateTimeStart.InvokeRequired == true)
-            //{
-            //    Action set = new Action(() => { dateTimeStart.Enabled = true; });
-            //    this.BeginInvoke(set);
-            //}
-            //else
-            //    dateTimeStart.Enabled = true;
-            
-        }
-
-        private void getHistoryAirData(object opath)
-        {
-            DateTime start = dateTimeStart.Value;
-            DateTime end = dateTimeEnd.Value;
-            end = new DateTime(end.Year, end.Month, end.Day, 23, 0, 0);
+        private void getHourData(object opath, DateTime start, DateTime end,List<string> cities)
+        {           
             string path = opath.ToString();
             StreamWriter sw = new StreamWriter(path, true);
-            List<string> cities = EnvironmentalData.getCity();
+            int index = path.IndexOf(Path.GetExtension(path));
+            string pathLog=path.Insert(index,DateTime.Now.Millisecond.ToString());
+            StreamWriter sw1 = new StreamWriter(pathLog, true);
             DateTime currenttime = start;
-            DateTime time = new DateTime(currenttime.Year, currenttime.Month, currenttime.Day, 0, 0, 0);
+            DateTime time = new DateTime(start.Year, start.Month, start.Day, 0, 0, 0);
+            end = new DateTime(start.Year, start.Month, start.Day+1, 0, 0, 0);
             int countNull = 0;
-            while (countNull < 5 & time.CompareTo(end)<0 &time.CompareTo(new DateTime(DateTime.Now.Year,DateTime.Now.Month,DateTime.Now.Day))<0)
+            while (end.CompareTo(time) > 0)
             {
-                    for (int i = 0; i < cities.Count; i++)
+                for (int i = 0; i < cities.Count; i++)
                 {
-                   // List<string> dataAll = new List<string>();
                     StringBuilder sb = new StringBuilder();
                     sb.Append(cities[i] + ";");
-                    sb.Append(string.Format("{0:g}", time) + ";");
-                   
+                    sb.Append(string.Format("{0:g}", time) + ";");                   
                     string[] data = EnvironmentalData.getHoursData(cities[i], time);
+                    if (data == null)
+                    {
+                        sw1.WriteLine(cities[i]+";"+time.ToString());
+                        continue;
+                    }
                     int dataNull = 0;
                     for (int j = 0; j < data.Length; j++)
                     {
@@ -254,47 +247,17 @@ namespace GetInfo_fromHtml
                         sw.WriteLine(sb.ToString());                       
                     }
                 }
-                time=time.AddHours(1);     
-            }
-            //do
-            //{               
-            //    for (int i = 0; i < cities.Count; i++)
-            //    {
-            //       // List<string> dataAll = new List<string>();
-            //        StringBuilder sb = new StringBuilder();
-            //        sb.Append(cities[i] + ";");
-            //        sb.Append(string.Format("{0:g}", time) + ";");
-                   
-            //        string[] data = EnvironmentalData.getHoursData(cities[i], time);
-            //        int dataNull = 0;
-            //        for (int j = 0; j < data.Length; j++)
-            //        {
-            //            if (string.IsNullOrWhiteSpace(data[j]))
-            //            {
-            //                dataNull++;
-            //            }
-            //            else
-            //            {
-            //                sb.Append(data[j] + ";");
-            //            }
-            //        }
-            //        if (dataNull == 8)
-            //        {
-            //            countNull++;
-            //        }
-            //        else
-            //        {                       
-            //            sw.WriteLine(sb.ToString());                       
-            //        }
-            //    }
-            //    time=time.AddHours(1);               
-            //} while (countNull < 5 & time.CompareTo(end)<0 &time.CompareTo(new DateTime(DateTime.Now.Year,DateTime.Now.Month,DateTime.Now.Day))<0);
+                time=time.AddHours(1);
+                GC.Collect();
+            }           
+            sw1.Close();
             sw.Close();
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
             SaveFileDialog ofd = new SaveFileDialog();
+            ofd.Filter = "文本文件|*.txt";
             if (dateTimeStart.Enabled & dateTimeEnd.Enabled)
             {
                 if (ofd.ShowDialog() == DialogResult.OK)
@@ -308,8 +271,30 @@ namespace GetInfo_fromHtml
                     {
                         dateTimeStart.Value = dateTimeEnd.Value;
                     }
-                    Action<DateTime, DateTime, string, string> getdata02 = new Action<DateTime, DateTime, string, string>(getDay);
-                    getdata02.BeginInvoke(dateTimeStart.Value, dateTimeEnd.Value, ofd.FileName, "", recall, null);                     
+
+                    List<string> cities = new List<string>();
+                    if (comboBox1.Items.Count < 1)
+                    {
+                        MessageBox.Show("请先获取城市列表！");
+                    }
+
+                    if (comboBox1.SelectedIndex == -1)
+                    {
+                        if (MessageBox.Show("是否要获取所有城市的空气质量数据？", "注意选择城市列表", MessageBoxButtons.OKCancel) == DialogResult.OK)
+                        {
+                            foreach (var item in comboBox1.Items)
+                            {
+                                cities.Add(item.ToString().Split(new string[] { ";", "；" }, StringSplitOptions.RemoveEmptyEntries)[0]);
+                            }
+                        }
+                        else
+                            return;
+                    }
+                    else
+                        cities.Add(comboBox1.SelectedItem.ToString().Split(new string[] { ";", "；" }, StringSplitOptions.RemoveEmptyEntries)[0]);
+
+                    Action<DateTime, DateTime, string,List<string>> getdata02 = new Action<DateTime, DateTime, string,List<string>>(getDayData);
+                    getdata02.BeginInvoke(dateTimeStart.Value, dateTimeEnd.Value, ofd.FileName, cities, null, null);                     
                 }
             }
         }
@@ -318,7 +303,7 @@ namespace GetInfo_fromHtml
         {
             List<string> cityList=new List<string>();
             List<string> tempcityList = new List<string>();            
-            for (int j = 0; j < 3; j++)
+            for (int j = 0; j < 2; j++)
 			{
                 int pageNo = 1;
                 tempcityList=new List<string>();                
@@ -355,42 +340,78 @@ namespace GetInfo_fromHtml
             return cityList;
         }
 
-        private void getDay(DateTime start, DateTime end, string pathfile, string city = "")
+        private void getDayData(DateTime start, DateTime end, string pathfile,List<string> city = null)
         {
             int pageNo = 1;
             using (StreamWriter sw = new StreamWriter(pathfile, true))
             {
                 string filename = Path.GetFileNameWithoutExtension(pathfile);
                 StreamWriter sw1 = new StreamWriter(Path.GetDirectoryName(pathfile) + "\\"+filename+"errHtml" + DateTime.Now.Millisecond.ToString() + ".txt", true);
-                List<string[]> dayData = null;
-                int uablecount = 0;
-                do
-                {                    
-                    dayData = null;
-                    dayData = EnvironmentalData.getDayData(pageNo, city, start, end);
-                    if (dayData==null)
-                    {
-                        //页数；城市；开始时间；结束时间；
-                        sw1.WriteLine(pageNo + ";" + city + ";" + start.ToString() + ";" + end.ToString());
-                        uablecount++;
-                        continue;
-                    }                    
-                    else if (dayData.Count==0)
-                    {
-                        uablecount++;
-                        continue;
-                    }
-                    for (int i = 0; i < dayData.Count; i++)
-                    {
-                        for (int j = 0; j < dayData[i].Length; j++)
+                List<string[]> dayData = null; 
+                if (city == null || city.Count < 1)
+                {
+                    int uablecount = 0;
+                    do
+                    {                        
+                        dayData = EnvironmentalData.getDayData(pageNo, "", start, end);
+                        if (dayData == null)
                         {
-                            sw.Write(dayData[i][j] + ";");
+                            //页数；城市；开始时间；结束时间；
+                            sw1.WriteLine(pageNo + ";" + city + ";" + start.ToString() + ";" + end.ToString());
+                            uablecount++;
+                            continue;
                         }
-                        sw.WriteLine();          
-                    }                            
-                    pageNo++;
-                    GC.Collect();
-                } while (uablecount <= 5);
+                        else if (dayData.Count == 0)
+                        {
+                            uablecount++;
+                            continue;
+                        }
+                        for (int i = 0; i < dayData.Count; i++)
+                        {
+                            for (int j = 0; j < dayData[i].Length; j++)
+                            {
+                                sw.Write(dayData[i][j] + ";");
+                            }
+                            sw.WriteLine();
+                        }
+                        pageNo++;
+                        GC.Collect();
+                    } while (uablecount <= 5);
+                }
+                else
+                {
+                    foreach (var item in city)
+                    {
+                        int uablecount = 0;
+                        do
+                        {
+                            dayData = EnvironmentalData.getDayData(pageNo, item, start, end);
+                            if (dayData == null)
+                            {
+                                //页数；城市；开始时间；结束时间；
+                                sw1.WriteLine(pageNo + ";" + city + ";" + start.ToString() + ";" + end.ToString());
+                                uablecount++;
+                                continue;
+                            }
+                            else if (dayData.Count == 0)
+                            {
+                                uablecount++;
+                                continue;
+                            }
+                            for (int i = 0; i < dayData.Count; i++)
+                            {
+                                for (int j = 0; j < dayData[i].Length; j++)
+                                {
+                                    sw.Write(dayData[i][j] + ";");
+                                }
+                                sw.WriteLine();
+                            }
+                            pageNo++;
+                            GC.Collect();
+                        } while (uablecount <= 5);
+                    }
+                   
+                }
                 sw1.Close();          
                 sw.Close();
             }
@@ -463,5 +484,70 @@ namespace GetInfo_fromHtml
             sw.Close();
         }
 
+        private void button7_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            //ofd.Filter = "文本文件|*.txt";
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                StreamReader sr = new StreamReader(ofd.FileName);
+                string str = null;
+                List<string> param = new List<string>();
+                while (!sr.EndOfStream)
+                {
+                    str = sr.ReadLine();
+                    param.Add(str);
+                }
+                sr.Close();
+                if (param.Count > 0)
+                {
+                    SaveFileDialog sfd = new SaveFileDialog();
+                    sfd.Filter = "*.txt|*.txt";
+                    if (sfd.ShowDialog() == DialogResult.OK)
+                    {
+                        Action<List<string>, string> getdata = new Action<List<string>, string>(getHourDataFromFile);
+                        getdata.BeginInvoke(param, sfd.FileName, null, null);
+                    }
+                }
+            }
+        }
+
+        private void getHourDataFromFile(List<string> param, string pathFile)
+        {
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            //Action CitiesDisply = new Action(() =>
+            //{
+            //    lock (comboBox1)
+            //    {
+            //        List<string> cities = getCityList(DateTime.Now.AddDays(-3));
+            //        if (cities.Count < 1)
+            //            MessageBox.Show("获取列表失败！");
+            //        updateCombox(cities, comboBox1);
+            //    }    
+            //});
+            //CitiesDisply.BeginInvoke(null, null);
+        }
+
+        private void updateCombox(List<string> cities,ComboBox cbox)
+        {
+            if (cbox.InvokeRequired == true)
+            {
+                Action<List<string>, ComboBox> updateDelgete = new Action<List<string>, ComboBox>(updateCombox);
+                this.BeginInvoke(updateDelgete,cities,cbox);
+            }
+            else
+            {
+                cbox.Items.Clear();
+                foreach (var city in cities)
+                {
+                    cbox.Items.Add(city);
+                }
+            }
+ 
+        }
     }
 }
