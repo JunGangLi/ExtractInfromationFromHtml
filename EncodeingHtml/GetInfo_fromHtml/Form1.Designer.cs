@@ -81,7 +81,7 @@
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(99, 23);
             this.button3.TabIndex = 4;
-            this.button3.Text = "选择城市列表";
+            this.button3.Text = "获取城市列表";
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
