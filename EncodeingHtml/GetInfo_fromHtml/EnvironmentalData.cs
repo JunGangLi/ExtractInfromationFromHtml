@@ -38,11 +38,9 @@ namespace GetInfo_fromHtml
                 if (root != null)
                 {
                     var citynodes = root.SelectSingleNode("/html[1]/body[1]");
-
                     for (int i = 1; i < 62; i++)
                     {
                         var cityRow = citynodes.ChildNodes[i];//省份所在的表格
-
                         if (cityRow.ChildNodes.Count > 0)
                         {
                             List<string> tempProviece = new List<string>();
@@ -59,10 +57,8 @@ namespace GetInfo_fromHtml
                                     tempProviece.Add(cityRow.ChildNodes[j].InnerText.Trim());
                                     if (temp.Contains("津"))
                                     {
-                                       
                                     }
                                 }
-
                             }
                             if (tempProviece.Count > 1)//去掉省份
                                 tempProviece.RemoveAt(0);
@@ -71,8 +67,7 @@ namespace GetInfo_fromHtml
                         else if (!string.IsNullOrWhiteSpace(cityRow.InnerText.Trim().Replace("\r\n","").Replace("\r","").Replace("\n","")))
                         {
                             result.Add(cityRow.InnerText.Trim());   
-                        }
-                                               
+                        }                    
                     }
                 }
                 return result;
@@ -82,8 +77,6 @@ namespace GetInfo_fromHtml
                 LogHelp.WriteLog(err, "EnvironmentalData");
                 return null;
             }
-
-           
         }
 
 
@@ -274,31 +267,52 @@ namespace GetInfo_fromHtml
         /// 获取所有城市的页面请求连接（http://www.pm25.in/），并写入文本
         /// </summary>
         /// <param name="savePath">保存路径</param>
-        public static void getCityHttp(string savePath)
-        {
-            HttpWebRequest pm25currentTime = (HttpWebRequest)WebRequest.Create("http://www.pm25.in/");
-            HttpWebResponse currenttimeResponse = (HttpWebResponse)pm25currentTime.GetResponse();
-            StreamReader sr = new StreamReader(currenttimeResponse.GetResponseStream());
-            string sb = sr.ReadToEnd();
-            sr.Close();
-            var doc = new HtmlDocument();
-            doc.LoadHtml(sb);
-            HtmlNode docnode = doc.DocumentNode;
-            StreamWriter sw = new StreamWriter(savePath, false);
-            for (int i = 1; i < 45; i++)
+        public static List<string> getCityHttp()
+        {           
+            try
             {
-                int count = docnode.ChildNodes[2].ChildNodes[3].ChildNodes[11].ChildNodes[5].ChildNodes[5].ChildNodes[3].ChildNodes[i].ChildNodes.Count;
-                var tempnode = docnode.ChildNodes[2].ChildNodes[3].ChildNodes[11].ChildNodes[5].ChildNodes[5].ChildNodes[3].ChildNodes[i].ChildNodes[3];
-                for (int j = 1; j < tempnode.ChildNodes.Count; j++)
+                List<string> urls = new List<string>();
+                for (int kk = 0; kk < 3; kk++)
                 {
-                    string cityName = tempnode.ChildNodes[j].ChildNodes[1].InnerHtml;
-                    string cityURL = string.Format("http://www.pm25.in{0}", tempnode.ChildNodes[j].ChildNodes[1].Attributes[0].Value);
-                    sw.WriteLine(string.Format("{0};{1}", cityName, cityURL));
-                    j++;
+                    List<string> tempurls = new List<string>();
+                    try
+                    {
+                        HttpWebRequest pm25currentTime = (HttpWebRequest)WebRequest.Create("http://www.pm25.in/");
+                        HttpWebResponse currenttimeResponse = (HttpWebResponse)pm25currentTime.GetResponse();
+                        StreamReader sr = new StreamReader(currenttimeResponse.GetResponseStream());
+                        string sb = sr.ReadToEnd();
+                        sr.Close();
+                        var doc = new HtmlDocument();
+                        doc.LoadHtml(sb);
+                        HtmlNode docnode = doc.DocumentNode;
+                        for (int i = 1; i < 45; i++)
+                        {
+                            int count = docnode.ChildNodes[2].ChildNodes[3].ChildNodes[11].ChildNodes[5].ChildNodes[5].ChildNodes[3].ChildNodes[i].ChildNodes.Count;
+                            var tempnode = docnode.ChildNodes[2].ChildNodes[3].ChildNodes[11].ChildNodes[5].ChildNodes[5].ChildNodes[3].ChildNodes[i].ChildNodes[3];
+                            for (int j = 1; j < tempnode.ChildNodes.Count; j++)
+                            {
+                                string cityName = tempnode.ChildNodes[j].ChildNodes[1].InnerHtml;
+                                string cityURL = string.Format("http://www.pm25.in{0}", tempnode.ChildNodes[j].ChildNodes[1].Attributes[0].Value);
+                                tempurls.Add(string.Format("{0};{1}", cityName, cityURL));
+                                j++;
+                            }
+                            i++;
+                        }
+                        if (urls == null)
+                            urls = tempurls;
+                        else
+                            urls = tempurls.Count > urls.Count ? tempurls : urls;
+                        tempurls = null;
+                    }
+                    catch (Exception) { }                   
                 }
-                i++;
+                return urls;
             }
-            sw.Close();
+            catch (Exception)
+            {
+                return null;                
+            }
+           
         }
 
         /// <summary>
@@ -309,34 +323,41 @@ namespace GetInfo_fromHtml
         /// 空气质量指数类别 首要污染物 PM25 PM10 CO CO2 O3(1小时平均值) O3(8小时平均值) SO2  </returns>
         public static List<string[]> getRealtimeData(string cityUrl)
         {
-            List<string[]> jiancezhan = new List<string[]>();
-
-            HttpWebRequest pm25currentTime = (HttpWebRequest)WebRequest.Create(cityUrl);
-            HttpWebResponse currenttimeResponse = (HttpWebResponse)pm25currentTime.GetResponse();
-            StreamReader sr = new StreamReader(currenttimeResponse.GetResponseStream());
-            string sb = sr.ReadToEnd();
-            sr.Close();
-            var doc = new HtmlDocument();
-            doc.LoadHtml(sb);
-            HtmlNode docnode = doc.DocumentNode;
-            var dirtyFirst = docnode.SelectSingleNode("/html[1]/body[1]/div[2]/div[1]/div[4]/div[1]/p[1]");//该市首要污染物           
-            var updateDataTime = docnode.SelectSingleNode("/html[1]/body[1]/div[2]/div[1]/div[2]/div[1]/p[1]");
-            var tdinfo = docnode.SelectSingleNode("html[1]/body[1]/div[2]/div[3]/table[1]/tbody[1]");//获取数据所在的表
-            for (int i = 1; i < tdinfo.ChildNodes.Count; i++)
+            try
             {
-                string[] hourdata = new string[12];
-                hourdata[0] = updateDataTime.InnerText.Trim().Split(new string[] { "间：" }, StringSplitOptions.RemoveEmptyEntries)[1];
-                int index = 1;
-                for (int j = 1; j < tdinfo.ChildNodes[i].ChildNodes.Count; j++)
+                List<string[]> jiancezhan = new List<string[]>();
+                HttpWebRequest pm25currentTime = (HttpWebRequest)WebRequest.Create(cityUrl);
+                HttpWebResponse currenttimeResponse = (HttpWebResponse)pm25currentTime.GetResponse();
+                StreamReader sr = new StreamReader(currenttimeResponse.GetResponseStream());
+                string sb = sr.ReadToEnd();
+                sr.Close();
+                var doc = new HtmlDocument();
+                doc.LoadHtml(sb);
+                HtmlNode docnode = doc.DocumentNode;
+                var dirtyFirst = docnode.SelectSingleNode("/html[1]/body[1]/div[2]/div[1]/div[4]/div[1]/p[1]");//该市首要污染物           
+                var updateDataTime = docnode.SelectSingleNode("/html[1]/body[1]/div[2]/div[1]/div[2]/div[1]/p[1]");
+                var tdinfo = docnode.SelectSingleNode("html[1]/body[1]/div[2]/div[3]/table[1]/tbody[1]");//获取数据所在的表
+                for (int i = 1; i < tdinfo.ChildNodes.Count; i++)
                 {
-                    //依次打出：监测点 AQI 空气质量指数类别 首要污染物 PM25 PM10 CO CO2 O3(1小时平均值) O3(8小时平均值) SO2                   
-                    hourdata[index++] = tdinfo.ChildNodes[i].ChildNodes[j].InnerText.Trim();
-                    j++;
+                    string[] hourdata = new string[12];
+                    hourdata[0] = updateDataTime.InnerText.Trim().Split(new string[] { "间：" }, StringSplitOptions.RemoveEmptyEntries)[1];
+                    int index = 1;
+                    for (int j = 1; j < tdinfo.ChildNodes[i].ChildNodes.Count; j++)
+                    {
+                        //依次打出：监测点 AQI 空气质量指数类别 首要污染物 PM25 PM10 CO CO2 O3(1小时平均值) O3(8小时平均值) SO2                   
+                        hourdata[index++] = tdinfo.ChildNodes[i].ChildNodes[j].InnerText.Trim();
+                        j++;
+                    }
+                    jiancezhan.Add(hourdata);
+                    i++;
                 }
-                jiancezhan.Add(hourdata);
-                i++;
+                return jiancezhan;
             }
-            return jiancezhan;
+            catch (Exception)
+            {
+                return null;              
+            }
+           
         }
 
     }

@@ -35,9 +35,19 @@ namespace GetInfo_fromHtml
                 {
                     if (!timer.Enabled)
                     {
+                        List<string> MonitorSitUrl = EnvironmentalData.getCityHttp();
+                        foreach (var item in MonitorSitUrl)
+                        {
+                            List<string[]> data= EnvironmentalData.getRealtimeData(item);
+                        }
+
+                       
+
+
+
                        // Action<DateTime, DateTime, string, string> getdata02 = new Action<DateTime, DateTime, string, string>(getDay);
                         
-                       // getDay(tempTime, tempTime, filePath + "\\cityList.txt", "");
+                        //getDay(tempTime, tempTime, filePath + "\\cityList.txt", "");
                        // getdata02.BeginInvoke(tempTime, tempTime, filePath + "\\cityList.txt", "", null, null); 
 
                         //Action<string, string> getRealtime = new Action<string, string>(autoGet);                           
@@ -106,7 +116,6 @@ namespace GetInfo_fromHtml
                     }
                     sw.Write("\r\n");
                 }
-               
             }
             sr.Close();
             sw.Close();
@@ -195,7 +204,7 @@ namespace GetInfo_fromHtml
                         cities.Add(comboBox1.SelectedItem.ToString().Split(new string[] { ";", "；" }, StringSplitOptions.RemoveEmptyEntries)[0]);
 
                     Action<string, DateTime, DateTime, List<string>> getdata02 = new Action<string, DateTime, DateTime, List<string>>(getHourData);
-                    getdata02.BeginInvoke(ofd.FileName,dateTimeStart.Value,dateTimeEnd.Value,cities, null, null);                   
+                    getdata02.BeginInvoke(ofd.FileName,dateTimeStart.Value,dateTimeEnd.Value,cities, null, null);     
                 }      
             }
         }
