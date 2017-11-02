@@ -14,8 +14,7 @@ namespace connectPostgreSQL
         public byte[] TifFile
         {
             get {
-                
-                return tifFile=tifFile; 
+                return tifFile; 
             }
             set { tifFile = value; }
         }
@@ -117,6 +116,20 @@ namespace connectPostgreSQL
             get { return geometryData ?? ""; }
             set { geometryData = value; }
         }
+
+        private string storePath;
+        public string StorePath
+        {
+            get { return storePath; }
+            set { storePath = value; }
+        }
+
+        private string feature;
+        public string Feature
+        {
+            get { return feature; }
+            set { feature = value; }
+        }
     }
     class Program
     {
@@ -136,7 +149,21 @@ namespace connectPostgreSQL
             //    cmd.Fill(ds);
             //}
             Sample s=new Sample();
-            string cmdstr = string.Format("insert into {0}(tiffile,standardversion,imagetype,imagesrc,imagephase,author,checker,producetime,province,city,district,samplewidthheight,centerx,centery) values({1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14});", "t01e01p00100", s.TifFile, s.StandardVerion, s.ImageType, s.ImageSrc, s.ImagePhase, s.Author, s.Checker, s.ProduceTime, s.Province, s.City, s.District, s.SampleWidtHeight, s.CenterX, s.CenterY);
+            s.StorePath = @"c:\\ss";
+            s.StandardVerion = "v1";
+            s.ImageType = "GF01";
+            s.ImageSrc = "影像源";
+            s.ImagePhase = DateTime.Now;
+            s.ProduceTime = DateTime.Now;
+            s.Province = "江苏";
+            s.City = "苏州";
+            s.District = "高新区";
+            s.SampleWidtHeight = 1000;
+            s.Feature = "LINE";
+            s.Author = "LI";
+            s.Checker = "zhang";
+
+            string cmdstr = string.Format("insert into {0}(standardversion,imagetype,imagesrc,imagephase,author,checker,producetime,province,city,district,samplewidthheight) values(\'{1}\',\'{2}\',\'{3}\',\'{4}\',\'{5}\',\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\');", "t01e01p00100", s.StandardVerion, s.ImageType, s.ImageSrc, s.ImagePhase.ToString(), s.Author, s.Checker, s.ProduceTime.ToShortDateString().ToString(), s.Province, s.City, s.District, s.SampleWidtHeight);
             //string cmdtxt = "insert into test_table(id,name) values (11,\'李磊\'),(12,\'韩梅梅\');";
             using (NpgsqlCommand cmd = new NpgsqlCommand(cmdstr, conn))
             {
