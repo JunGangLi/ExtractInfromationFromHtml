@@ -21,7 +21,6 @@ D:\BaiduNetdiskDownload\EncodeingHtml\GetInfo_fromHtml\obj\Debug\GetInfo_fromHtm
 D:\LIJUNGANG\StudyEveryDay\GitHub\ExtractInfromationFromHtml\EncodeingHtml\GetInfo_fromHtml\bin\Debug\GetInfo_fromHtml.exe.config
 D:\LIJUNGANG\StudyEveryDay\GitHub\ExtractInfromationFromHtml\EncodeingHtml\GetInfo_fromHtml\bin\Debug\GetInfo_fromHtml.exe
 D:\LIJUNGANG\StudyEveryDay\GitHub\ExtractInfromationFromHtml\EncodeingHtml\GetInfo_fromHtml\bin\Debug\GetInfo_fromHtml.pdb
-D:\LIJUNGANG\StudyEveryDay\GitHub\ExtractInfromationFromHtml\EncodeingHtml\GetInfo_fromHtml\bin\Debug\HtmlAgilityPack.dll
 D:\LIJUNGANG\StudyEveryDay\GitHub\ExtractInfromationFromHtml\EncodeingHtml\GetInfo_fromHtml\bin\Debug\HtmlAgilityPack.pdb
 D:\LIJUNGANG\StudyEveryDay\GitHub\ExtractInfromationFromHtml\EncodeingHtml\GetInfo_fromHtml\bin\Debug\HtmlAgilityPack.xml
 D:\LIJUNGANG\StudyEveryDay\GitHub\ExtractInfromationFromHtml\EncodeingHtml\GetInfo_fromHtml\obj\Debug\GetInfo_fromHtml.csprojResolveAssemblyReference.cache

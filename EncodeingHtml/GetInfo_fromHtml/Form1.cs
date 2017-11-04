@@ -99,7 +99,7 @@ namespace GetInfo_fromHtml
         private void autoGet(string cityList, string dataPath)
         {
             timer.Interval = 3600000;
-            EnvironmentalData.getCityHttp(cityList);
+            EnvironmentalData.getCityHttp();
             StreamReader sr = new StreamReader(cityList);
             StreamWriter sw = new StreamWriter(dataPath, true);
             while (!sr.EndOfStream)
@@ -133,14 +133,24 @@ namespace GetInfo_fromHtml
       
         private void button3_Click(object sender, EventArgs e)
         {
-            Action CitiesDisply = new Action(() =>
+            if (Monitor.TryEnter(complete))
             {
-                List<string> cities = getCityList(DateTime.Now.AddDays(-3));
-                if (cities.Count < 1)
-                    MessageBox.Show("获取列表失败！");
-                updateCombox(cities, comboBox1);                          
-            });
-            CitiesDisply.BeginInvoke(null,null);
+                lock (complete)
+                {                   
+                    Action CitiesDisply = new Action(() =>
+                    {
+                        List<string> cities = getCityList(DateTime.Now.AddDays(-3));
+                        if (cities.Count < 1)
+                            MessageBox.Show("获取列表失败！");
+                        updateCombox(cities, comboBox1);
+                    });
+                    CitiesDisply.BeginInvoke(null, null);
+                }
+            }
+            else
+                MessageBox.Show("正在获取城市列表");
+
+           
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -526,19 +536,23 @@ namespace GetInfo_fromHtml
 
         }
 
+        private readonly object complete = new object();
         private void Form1_Load(object sender, EventArgs e)
         {
-            //Action CitiesDisply = new Action(() =>
-            //{
-            //    lock (comboBox1)
-            //    {
-            //        List<string> cities = getCityList(DateTime.Now.AddDays(-3));
-            //        if (cities.Count < 1)
-            //            MessageBox.Show("获取列表失败！");
-            //        updateCombox(cities, comboBox1);
-            //    }    
-            //});
-            //CitiesDisply.BeginInvoke(null, null);
+            if (comboBox1.Items.Count<1 & Monitor.TryEnter(complete))
+            {
+                lock (complete)
+                {
+                    Action CitiesDisply = new Action(() =>
+                    {
+                        List<string> cities = getCityList(DateTime.Now.AddDays(-3));
+                        if (cities.Count < 1)
+                            MessageBox.Show("获取列表失败！");
+                        updateCombox(cities, comboBox1);
+                    });
+                    CitiesDisply.BeginInvoke(null, null);
+                }
+            }
         }
 
         private void updateCombox(List<string> cities,ComboBox cbox)
