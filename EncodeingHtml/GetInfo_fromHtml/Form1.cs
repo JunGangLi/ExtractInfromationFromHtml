@@ -133,24 +133,21 @@ namespace GetInfo_fromHtml
       
         private void button3_Click(object sender, EventArgs e)
         {
-            if (Monitor.TryEnter(complete))
-            {
-                lock (complete)
-                {                   
-                    Action CitiesDisply = new Action(() =>
-                    {
-                        List<string> cities = getCityList(DateTime.Now.AddDays(-3));
-                        if (cities.Count < 1)
-                            MessageBox.Show("获取列表失败！");
-                        updateCombox(cities, comboBox1);
-                    });
-                    CitiesDisply.BeginInvoke(null, null);
-                }
+            if (complete==0)
+            {                                   
+                Action CitiesDisply = new Action(() =>
+                {
+                    complete++;
+                    List<string> cities = getCityList(DateTime.Now.AddDays(-3));
+                    if (cities.Count < 1)
+                        MessageBox.Show("获取列表失败！");
+                    updateCombox(cities, comboBox1);
+                    complete = 0;
+                });
+                CitiesDisply.BeginInvoke(null, null);                
             }
             else
                 MessageBox.Show("正在获取城市列表");
-
-           
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -204,14 +201,15 @@ namespace GetInfo_fromHtml
                         {
                             foreach (var item in comboBox1.Items)
                             {
-                                cities.Add(item.ToString().Split(new string[]{";","；"},StringSplitOptions.RemoveEmptyEntries)[0]);
+                                cities.Add(item.ToString().ToString());
+                               // cities.Add(item.ToString().Split(new string[]{";","；"},StringSplitOptions.RemoveEmptyEntries)[0]);
                             }
                         }
                         else
                             return;
                     }
                     else
-                        cities.Add(comboBox1.SelectedItem.ToString().Split(new string[] { ";", "；" }, StringSplitOptions.RemoveEmptyEntries)[0]);
+                        cities.Add(comboBox1.SelectedItem.ToString());
 
                     Action<string, DateTime, DateTime, List<string>> getdata02 = new Action<string, DateTime, DateTime, List<string>>(getHourData);
                     getdata02.BeginInvoke(ofd.FileName,dateTimeStart.Value,dateTimeEnd.Value,cities, null, null);     
@@ -238,8 +236,9 @@ namespace GetInfo_fromHtml
                 {
                     StringBuilder sb = new StringBuilder();
                     sb.Append(cities[i] + ";");
-                    sb.Append(string.Format("{0:g}", time) + ";");                   
-                    string[] data = EnvironmentalData.getHoursData(cities[i], time);
+                    sb.Append(string.Format("{0:g}", time) + ";");
+                    string[] cityId = cities[i].Split(new string[] { ";", "；" }, StringSplitOptions.RemoveEmptyEntries);
+                    string[] data = EnvironmentalData.getHoursData(cityId[0], time);
                     if (data == null)
                     {
                         sw1.WriteLine(cities[i]+";"+time.ToString());
@@ -262,8 +261,8 @@ namespace GetInfo_fromHtml
                         countNull++;
                     }
                     else
-                    {                       
-                        sw.WriteLine(sb.ToString());                       
+                    {
+                        sw.WriteLine(cityId[1]+";"+sb.ToString());                       
                     }
                 }
                 time=time.AddHours(1);
@@ -536,22 +535,21 @@ namespace GetInfo_fromHtml
 
         }
 
-        private readonly object complete = new object();
+        private static int complete = 0;
         private void Form1_Load(object sender, EventArgs e)
         {
-            if (comboBox1.Items.Count<1 & Monitor.TryEnter(complete))
+            if (comboBox1.Items.Count<1 & complete==0)
             {
-                lock (complete)
+                Action CitiesDisply = new Action(() =>
                 {
-                    Action CitiesDisply = new Action(() =>
-                    {
-                        List<string> cities = getCityList(DateTime.Now.AddDays(-3));
-                        if (cities.Count < 1)
-                            MessageBox.Show("获取列表失败！");
-                        updateCombox(cities, comboBox1);
-                    });
-                    CitiesDisply.BeginInvoke(null, null);
-                }
+                    complete++;
+                    List<string> cities = getCityList(DateTime.Now.AddDays(-3));
+                    if (cities.Count < 1)
+                        MessageBox.Show("获取列表失败！");
+                    updateCombox(cities, comboBox1);
+                    complete = 0;
+                });
+                CitiesDisply.BeginInvoke(null, null);               
             }
         }
 
