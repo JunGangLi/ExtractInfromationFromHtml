@@ -38,3 +38,10 @@ E:\李俊刚\GitHub\ExtractInfromationFromHtml\EncodeingHtml\GetInfo_fromHtml\bi
 E:\李俊刚\GitHub\ExtractInfromationFromHtml\EncodeingHtml\GetInfo_fromHtml\bin\Debug\HtmlAgilityPack.dll
 E:\李俊刚\GitHub\ExtractInfromationFromHtml\EncodeingHtml\GetInfo_fromHtml\bin\Debug\HtmlAgilityPack.pdb
 E:\李俊刚\GitHub\ExtractInfromationFromHtml\EncodeingHtml\GetInfo_fromHtml\bin\Debug\HtmlAgilityPack.xml
+D:\LIJUNGANG\study\GitHub\ExtractInfromationFromHtml\EncodeingHtml\GetInfo_fromHtml\bin\Debug\GetInfo_fromHtml.exe.config
+D:\LIJUNGANG\study\GitHub\ExtractInfromationFromHtml\EncodeingHtml\GetInfo_fromHtml\obj\Debug\GetInfo_fromHtml.exe
+D:\LIJUNGANG\study\GitHub\ExtractInfromationFromHtml\EncodeingHtml\GetInfo_fromHtml\obj\Debug\GetInfo_fromHtml.pdb
+D:\LIJUNGANG\study\GitHub\ExtractInfromationFromHtml\EncodeingHtml\GetInfo_fromHtml\obj\Debug\GetInfo_fromHtml.csprojResolveAssemblyReference.cache
+D:\LIJUNGANG\study\GitHub\ExtractInfromationFromHtml\EncodeingHtml\GetInfo_fromHtml\obj\Debug\GetInfo_fromHtml.Form1.resources
+D:\LIJUNGANG\study\GitHub\ExtractInfromationFromHtml\EncodeingHtml\GetInfo_fromHtml\obj\Debug\GetInfo_fromHtml.Properties.Resources.resources
+D:\LIJUNGANG\study\GitHub\ExtractInfromationFromHtml\EncodeingHtml\GetInfo_fromHtml\obj\Debug\GetInfo_fromHtml.csproj.GenerateResource.Cache
