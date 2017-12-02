@@ -225,7 +225,7 @@ namespace GetInfo_fromHtml
             string path = opath.ToString();
             StreamWriter sw = new StreamWriter(path, true);
             int index = path.IndexOf(Path.GetExtension(path));
-            string pathLog=path.Insert(index,DateTime.Now.Millisecond.ToString());
+            string pathLog=path.Insert(index,"HourDataErr"+DateTime.Now.Millisecond.ToString());
             StreamWriter sw1 = new StreamWriter(pathLog, true);
             DateTime currenttime = start;
             DateTime time = new DateTime(start.Year, start.Month, start.Day, 0, 0, 0);
