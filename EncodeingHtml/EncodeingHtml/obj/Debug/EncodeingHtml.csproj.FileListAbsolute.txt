@@ -6,3 +6,6 @@ D:\LIJUNGANG\study\GitHub\ExtractInfromationFromHtml\EncodeingHtml\EncodeingHtml
 D:\LIJUNGANG\study\GitHub\ExtractInfromationFromHtml\EncodeingHtml\EncodeingHtml\bin\Debug\HtmlAgilityPack.pdb
 D:\LIJUNGANG\study\GitHub\ExtractInfromationFromHtml\EncodeingHtml\EncodeingHtml\obj\Debug\EncodeingHtml.exe
 D:\LIJUNGANG\study\GitHub\ExtractInfromationFromHtml\EncodeingHtml\EncodeingHtml\obj\Debug\EncodeingHtml.pdb
+E:\LJG\GitHub\ExtractInfromationFromHtml\EncodeingHtml\EncodeingHtml\bin\Debug\EncodeingHtml.exe.config
+E:\LJG\GitHub\ExtractInfromationFromHtml\EncodeingHtml\EncodeingHtml\obj\Debug\EncodeingHtml.exe
+E:\LJG\GitHub\ExtractInfromationFromHtml\EncodeingHtml\EncodeingHtml\obj\Debug\EncodeingHtml.pdb

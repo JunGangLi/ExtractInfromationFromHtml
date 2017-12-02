@@ -193,6 +193,7 @@ namespace GetInfo_fromHtml
                     if (comboBox1.Items.Count<1)
                     {
                         MessageBox.Show("请先获取城市列表！");
+                        return;
                     }
 
                     if (comboBox1.SelectedIndex == -1)

@@ -95,11 +95,16 @@ namespace GetInfo_fromHtml
                 StringBuilder sb = new StringBuilder();               
                 byte[] time = System.Text.Encoding.UTF8.GetBytes(string.Format("{0:g}", date));
                 string formWeb = "cityName=" + System.Web.HttpUtility.UrlEncode(name) + "&searchTime=" + System.Web.HttpUtility.UrlEncode(time);
-                string url = string.Format("http://datacenter.mep.gov.cn/index!environmentAirHourDetail.action?{0}", formWeb);
+                string url = "http://datacenter.mep.gov.cn/index!environmentAirHourDetail.action";
+                    //string.Format("http://datacenter.mep.gov.cn/index!environmentAirHourDetail.action?{0}", formWeb);
                 HttpWebRequest httprequest = (HttpWebRequest)WebRequest.Create(url);
                 httprequest.KeepAlive = true;
                 httprequest.Accept = " gzip, deflate";
                 httprequest.Method = "POST";
+                httprequest.ContentType = "application/x-www-form-urlencoded";
+                StreamWriter sw = new StreamWriter(httprequest.GetRequestStream());
+                sw.WriteLine(formWeb);
+                sw.Close();
                 try
                 {
                     HttpWebResponse httpresponse = (HttpWebResponse)httprequest.GetResponse();
@@ -200,8 +205,8 @@ namespace GetInfo_fromHtml
             string vtime = System.Web.HttpUtility.UrlEncode(fromtimebyte);
             byte[] endtimebyte = System.Text.Encoding.UTF8.GetBytes(endDate.ToString("yyyy-MM-dd"));
             string etime = System.Web.HttpUtility.UrlEncode(endtimebyte);
-
-            string webform = string.Format("page.pageNo={0}&page.orderBy=&page.order=&orderby=&ordertype=&xmlname=1462259560614&queryflag=open&gisDataJson=&isdesignpatterns=false&CITY={1}&V_DATE={2}&E_DATE={3}", PageNo, city, vtime, etime);
+            //string webform=string.Format("page.pageNo=1&page.orderBy=&page.order=&orderby=&ordertype=&xmlname=1462259560614&queryflag=close&isdesignpatterns=false&CITY=衡水市&V_DATE=2016-11-10&E_DATE=2017-11-23"
+            string webform = string.Format("page.pageNo={0}&page.orderBy=&page.order=&orderby=&ordertype=&xmlname=1462259560614&queryflag=close&gisDataJson=&isdesignpatterns=false&CITY={1}&V_DATE={2}&E_DATE={3}", PageNo, city, vtime, etime);
             byte[] webformByte = System.Text.Encoding.UTF8.GetBytes(webform);
             HttpWebRequest httprequest = (HttpWebRequest)WebRequest.Create("http://datacenter.mep.gov.cn:8099/ths-report/report!list.action");
             
@@ -218,7 +223,7 @@ namespace GetInfo_fromHtml
                     HttpWebResponse response = (HttpWebResponse)httprequest.GetResponse();
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
-                        StreamReader sr = new StreamReader(response.GetResponseStream());
+                        StreamReader sr = new StreamReader(response.GetResponseStream(),Encoding.UTF8);
                         string sb = sr.ReadToEnd();
                         sr.Close();
                         response.Close();
